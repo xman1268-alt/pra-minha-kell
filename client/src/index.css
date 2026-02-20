@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 350 30% 97%;
+    --foreground: 340 40% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 340 40% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 40% 15%;
+    --primary: 330 80% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 290 60% 55%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 340 20% 92%;
+    --muted-foreground: 340 20% 50%;
+    --accent: 350 80% 65%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 340 20% 88%;
+    --input: 340 20% 88%;
+    --ring: 330 80% 55%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(135deg, #fce4ec 0%, #fdf0f5 40%, #fce4f7 70%, #ede7f6 100%);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+/* Floating notes background animation */
+@keyframes floatNote {
+  0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.1; }
+  90%  { opacity: 0.1; }
+  100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+
+.note {
+  position: fixed;
+  opacity: 0.1;
+  animation: floatNote linear infinite;
+  color: #e91e8c;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Waveform bars */
+@keyframes wave {
+  from { height: 8px; }
+  to   { height: 48px; }
+}
+
+.wave-bar {
+  width: 5px;
+  border-radius: 3px;
+  background: linear-gradient(to top, #e91e8c, #9c27b0);
+  height: 8px;
+  transition: height 0.1s;
+}
+
+.wave-bar.playing {
+  animation: wave 0.75s ease-in-out infinite alternate;
+}
+
+.wave-bar:nth-child(1).playing  { animation-delay: 0s; }
+.wave-bar:nth-child(2).playing  { animation-delay: 0.09s; }
+.wave-bar:nth-child(3).playing  { animation-delay: 0.18s; }
+.wave-bar:nth-child(4).playing  { animation-delay: 0.04s; }
+.wave-bar:nth-child(5).playing  { animation-delay: 0.13s; }
+.wave-bar:nth-child(6).playing  { animation-delay: 0.22s; }
+.wave-bar:nth-child(7).playing  { animation-delay: 0.07s; }
+.wave-bar:nth-child(8).playing  { animation-delay: 0.16s; }
+.wave-bar:nth-child(9).playing  { animation-delay: 0.25s; }
+.wave-bar:nth-child(10).playing { animation-delay: 0.02s; }
+.wave-bar:nth-child(11).playing { animation-delay: 0.11s; }
+.wave-bar:nth-child(12).playing { animation-delay: 0.20s; }
+
+/* Vinyl spin */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.vinyl-spin {
+  animation: spin 3s linear infinite;
+}
+
+.vinyl-spin-paused {
+  animation: spin 3s linear infinite paused;
+}
+
+/* Pulse slow */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* Score pop */
+@keyframes scorePop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.score-pop {
+  animation: scorePop 0.4s ease;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #e91e8c, #9c27b0, #c2185b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

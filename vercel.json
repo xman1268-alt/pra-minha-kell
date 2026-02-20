@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/public",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/playlist/:id", "destination": "/api/playlist/[id]" },
+    { "source": "/api/games/leaderboard/:playlistId", "destination": "/api/games/leaderboard/[playlistId]" },
+    { "source": "/api/games", "destination": "/api/games/index" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

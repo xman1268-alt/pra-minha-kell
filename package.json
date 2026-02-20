@@ -1,0 +1,47 @@
+{
+  "name": "melody-quest",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server/index.ts",
+    "build": "vite build",
+    "start": "node dist/server/index.js",
+    "db:push": "drizzle-kit push"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.56.2",
+    "@vercel/node": "^3.2.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.2",
+    "axios": "^1.7.7",
+    "canvas-confetti": "^1.9.3",
+    "drizzle-orm": "^0.33.0",
+    "drizzle-zod": "^0.5.1",
+    "express": "^4.21.0",
+    "framer-motion": "^11.9.0",
+    "lucide-react": "^0.446.0",
+    "nanoid": "^5.0.7",
+    "pg": "^8.13.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-youtube": "^10.1.0",
+    "wouter": "^3.3.5",
+    "ytpl": "^2.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/canvas-confetti": "^1.6.4",
+    "@types/express": "^4.17.21",
+    "@types/pg": "^8.11.10",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "drizzle-kit": "^0.24.0",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.12",
+    "tsx": "^4.19.1",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.14"
+  }
+}
