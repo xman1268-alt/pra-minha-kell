@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { FloatingNotes } from "@/components/FloatingNotes";
 import { motion } from "framer-motion";
 import { Disc } from "lucide-react";
 
@@ -38,97 +37,201 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <FloatingNotes />
-      <div className="absolute inset-0 pointer-events-none">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-24 -left-24 w-96 h-96 bg-pink-300/20 rounded-full blur-[100px]" />
-        <motion.div animate={{ rotate: -360 }} transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute -bottom-24 -right-24 w-96 h-96 bg-purple-300/20 rounded-full blur-[100px]" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{ background: "linear-gradient(180deg, #fff 0%, #fff0f7 100%)" }}>
 
-      <div className="max-w-xl w-full z-10 space-y-5">
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="text-center text-xs text-pink-300/70 font-['Playfair_Display'] italic tracking-widest">
-          ✦ Para o meu eterno amor Rakell ✦
-        </motion.p>
+      {/* Blobs */}
+      <motion.div
+        animate={{ x: [0, 20, 0], y: [0, 15, 0] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-24 -left-20 w-80 h-80 rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(255,182,213,0.38) 0%, transparent 70%)" }}
+      />
+      <motion.div
+        animate={{ x: [0, -20, 0], y: [0, -15, 0] }}
+        transition={{ duration: 13, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -bottom-20 -right-16 w-64 h-64 rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(216,180,254,0.28) 0%, transparent 70%)" }}
+      />
 
-        <div className="text-center space-y-2">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="w-16 h-16 mx-auto">
-            <div className="w-16 h-16 rounded-full shadow-2xl vinyl-spin relative flex items-center justify-center"
-              style={{ background: "conic-gradient(from 0deg, #1a0a12, #3d1a2e 20%, #1a0a12 40%, #3d1a2e 60%, #1a0a12)" }}>
-              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-300 to-pink-600 z-10 relative" />
-              <div className="absolute w-2 h-2 rounded-full bg-white" />
-            </div>
+      {/* 상단 장식선 */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-12"
+        style={{ background: "linear-gradient(to bottom, transparent, #f9a8cc)" }} />
+
+      <div className="max-w-xl w-full z-10 space-y-6">
+
+        {/* ── 헤더 ── */}
+        <div className="text-center flex flex-col items-center gap-4">
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-xs tracking-[4px] uppercase"
+            style={{ color: "#d48fb0", fontFamily: "'DM Sans', sans-serif", fontWeight: 300 }}>
+            ♪ playlist quiz ♪
+          </motion.p>
+
+          {/* 바이닐 */}
+          <motion.div
+            initial={{ scale: 0, rotate: -20 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 180, damping: 14 }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+              className="w-28 h-28 rounded-full relative flex items-center justify-center"
+              style={{
+                background: "linear-gradient(135deg, #b06ce0 0%, #e040a0 40%, #7c3aed 75%, #c026a0 100%)",
+                boxShadow: "0 8px 32px rgba(180,100,220,0.30), 0 2px 8px rgba(233,30,140,0.15)",
+              }}>
+              {/* 홈 패턴 */}
+              <div className="absolute inset-0 rounded-full"
+                style={{
+                  background: "repeating-radial-gradient(circle at 50%, transparent 0px, transparent 6px, rgba(255,255,255,0.06) 6px, rgba(255,255,255,0.06) 7px)"
+                }} />
+              {/* 하이라이트 */}
+              <div className="absolute rounded-full"
+                style={{
+                  width: 44, height: 44, top: 14, left: 16,
+                  background: "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.38) 0%, transparent 60%)"
+                }} />
+              {/* 센터 */}
+              <div className="w-9 h-9 rounded-full flex items-center justify-center z-10 relative"
+                style={{ background: "#fff5f9", boxShadow: "0 0 0 2px rgba(255,255,255,0.5)" }}>
+                <div className="w-2 h-2 rounded-full"
+                  style={{ background: "linear-gradient(135deg, #e040a0, #7c3aed)" }} />
+              </div>
+            </motion.div>
           </motion.div>
-          <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-            className="text-3xl md:text-4xl font-['Playfair_Display'] font-bold">
-            <span className="gradient-text">Guess the title</span>
+
+          {/* 제목 */}
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="text-5xl font-black whitespace-nowrap"
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              background: "linear-gradient(135deg, #b5395f 0%, #7c3aed 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}>
+            Guess the Music
           </motion.h1>
-          <p className="text-gray-500 text-sm">of your favorite music playlist 🎵✨</p>
+
+          {/* 뱃지 */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.25 }}
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs tracking-widest uppercase font-medium"
+            style={{
+              background: "rgba(255,182,213,0.22)",
+              border: "1px solid rgba(244,143,177,0.35)",
+              color: "#c2185b",
+            }}>
+            🎵 choose · listen · score
+          </motion.div>
+
+          {/* 헌정 문구 */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-xs italic tracking-[3px]"
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              color: "#d4a0bc",
+              borderTop: "1px solid #fce4f0",
+              paddingTop: 10,
+              width: 280,
+              textAlign: "center",
+            }}>
+            ✦ Para o meu eterno amor Rakell ✦
+          </motion.p>
         </div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-pink-100 space-y-5">
+        {/* ── 설정 카드 ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="rounded-3xl p-6 shadow-xl space-y-5"
+          style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)", border: "1px solid #fce4f0" }}>
           <form onSubmit={handleStart} className="space-y-5">
 
+            {/* Playlist URL */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-pink-500 uppercase tracking-wider ml-1">Playlist URL</label>
+              <label className="text-xs font-semibold uppercase tracking-wider ml-1" style={{ color: "#e91e8c" }}>
+                Playlist URL
+              </label>
               <div className="relative">
-                <Disc className="absolute left-3 top-1/2 -translate-y-1/2 text-pink-300 w-4 h-4" />
-                <input value={playlistInput} onChange={(e) => setPlaylistInput(e.target.value)}
+                <Disc className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#f9a8cc" }} />
+                <input
+                  value={playlistInput}
+                  onChange={(e) => setPlaylistInput(e.target.value)}
                   placeholder="https://www.youtube.com/playlist?list=..."
-                  className="w-full pl-9 py-3 pr-4 rounded-2xl border-2 border-pink-100 bg-white/60 text-sm text-gray-700 placeholder:text-pink-200 focus:outline-none focus:border-pink-400 transition-all" />
+                  className="w-full pl-9 py-3 pr-4 rounded-2xl text-sm text-gray-700 focus:outline-none transition-all"
+                  style={{
+                    border: "2px solid #fce4f0",
+                    background: "rgba(255,255,255,0.7)",
+                  }}
+                  onFocus={e => e.currentTarget.style.borderColor = "#f48fb1"}
+                  onBlur={e => e.currentTarget.style.borderColor = "#fce4f0"}
+                />
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
                 {[
                   { label: "💖 Rakell's Favorite", id: "PLhXBj2Th3Eq4xDKmZWTLnCtCJY-iRIWT5" },
-                  { label: "🌸 Kpop Girl Groups", id: "PLw-VjHDlEOgs658kAHR_88UC3f4DhB-eb" },
-                  { label: "💃 Fifth Harmony", id: "PLDIoUOhQQPlXr63I_ZFAEVHZVcHdZmCCn" },
-                  { label: "🖤 Billie Eilish", id: "PLop28K3JGxM0XzqRFQ8Zf3MqXm0QN2oYO" },
                 ].map(({ label, id }) => (
                   <button key={id} type="button" onClick={() => setPlaylistInput(id)}
-                    className="text-xs px-3 py-1.5 rounded-full bg-pink-50 hover:bg-pink-100 border border-pink-200 hover:border-pink-400 text-pink-500 transition-all">
+                    className="text-xs px-3 py-1.5 rounded-full transition-all"
+                    style={{ background: "#fff0f6", border: "1px solid #f9c5d9", color: "#c2185b" }}>
                     {label}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Time Limit */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-pink-500 uppercase tracking-wider ml-1">Time Limit</label>
+              <label className="text-xs font-semibold uppercase tracking-wider ml-1" style={{ color: "#e91e8c" }}>
+                Time Limit
+              </label>
               <div className="flex gap-2">
                 {TIME_OPTIONS.map((opt) => (
                   <button key={opt.value} type="button" onClick={() => setTimeLimit(opt.value)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
-                      timeLimit === opt.value
-                        ? "bg-pink-500 text-white border-pink-500 shadow-md shadow-pink-200"
-                        : "bg-white text-pink-400 border-pink-100 hover:border-pink-300"
-                    }`}>
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+                    style={timeLimit === opt.value
+                      ? { background: "linear-gradient(135deg, #e91e8c, #9c27b0)", color: "white", border: "2px solid transparent", boxShadow: "0 4px 12px rgba(233,30,140,0.25)" }
+                      : { background: "white", color: "#d48fb0", border: "2px solid #fce4f0" }}>
                     {opt.label}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Songs */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-pink-500 uppercase tracking-wider ml-1">Songs</label>
+              <label className="text-xs font-semibold uppercase tracking-wider ml-1" style={{ color: "#e91e8c" }}>
+                Songs
+              </label>
               <div className="flex gap-2">
                 {COUNT_OPTIONS.map((opt) => (
                   <button key={opt.value} type="button" onClick={() => setSongCount(opt.value)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${
-                      songCount === opt.value
-                        ? "bg-pink-500 text-white border-pink-500 shadow-md shadow-pink-200"
-                        : "bg-white text-pink-400 border-pink-100 hover:border-pink-300"
-                    }`}>
+                    className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all"
+                    style={songCount === opt.value
+                      ? { background: "linear-gradient(135deg, #e91e8c, #9c27b0)", color: "white", border: "2px solid transparent", boxShadow: "0 4px 12px rgba(233,30,140,0.25)" }
+                      : { background: "white", color: "#d48fb0", border: "2px solid #fce4f0" }}>
                     {opt.label}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Start button */}
             <motion.button
               type="submit"
               disabled={!playlistInput.trim()}
@@ -139,7 +242,11 @@ export default function Home() {
               onTouchEnd={() => setPressing(false)}
               animate={{ scale: pressing ? 0.95 : 1 }}
               transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              className="w-full py-4 rounded-2xl font-semibold text-white text-base bg-gradient-to-r from-pink-500 to-purple-500 shadow-lg shadow-pink-200 hover:shadow-pink-300 disabled:opacity-40 disabled:cursor-not-allowed transition-shadow flex items-center justify-center gap-2">
+              className="w-full py-4 rounded-2xl font-semibold text-white text-base disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              style={{
+                background: "linear-gradient(135deg, #e91e8c, #7c3aed)",
+                boxShadow: "0 8px 24px rgba(233,30,140,0.28)",
+              }}>
               ▶ Start Game
             </motion.button>
           </form>
