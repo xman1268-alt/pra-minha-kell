@@ -140,13 +140,12 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-xs italic tracking-[3px]"
+            className="text-xs italic tracking-[3px] whitespace-nowrap"
             style={{
               fontFamily: "'Playfair Display', serif",
               color: "#d4a0bc",
               borderTop: "1px solid #fce4f0",
               paddingTop: 10,
-              width: 280,
               textAlign: "center",
             }}>
             ✦ Para o meu eterno amor Rakell ✦
@@ -184,6 +183,7 @@ export default function Home() {
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
                 {[
+                  { label: "💖 Rakell's Favorite", id: "PLhXBj2Th3Eq4xDKmZWTLnCtCJY-iRIWT5" },
                   { label: "🖤 Billie Eilish", id: "PL7LcngJfCRUE37E25pKTSPvVDYYvES3N9" },
                   { label: "🎤 Fifth Harmony", id: "PLxsMKpWb6s1Gx3VScWjLXp1UFEQug7rvz" },
                   { label: "🎸 Cazuza", id: "PLvgcQr40gK92Xtz-Tfkl9HJwKHU6UW4wF" },

@@ -36,6 +36,41 @@ function getRandomStart() {
 
 type GameState = "loading" | "loadingScreen" | "playing" | "result" | "gameOver";
 
+// ── Love Message Component ──
+const LOVE_MESSAGES = ["Don't forget, I love you", "Te amo, meu girasol"];
+
+function LoveMessage() {
+  const [msg, setMsg] = useState(LOVE_MESSAGES[Math.floor(Math.random() * LOVE_MESSAGES.length)]);
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setMsg(LOVE_MESSAGES[Math.floor(Math.random() * LOVE_MESSAGES.length)]);
+        setVisible(true);
+      }, 300);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <motion.p
+      animate={{ opacity: visible ? 1 : 0 }}
+      transition={{ duration: 0.3 }}
+      style={{
+        fontFamily: "'Playfair Display', serif",
+        fontSize: 11,
+        color: "#e0a0c0",
+        letterSpacing: "0.05em",
+        fontStyle: "italic",
+        marginTop: 4,
+      }}>
+      {msg}
+    </motion.p>
+  );
+}
+
 export default function Game() {
   const [, params] = useRoute("/game/:id");
   const search = useSearch();
@@ -241,6 +276,7 @@ export default function Game() {
             <div className="w-8 h-8 rounded-full" style={{ background: "#fff5f9" }} />
           </motion.div>
           <p className="text-pink-400 font-['Playfair_Display'] text-lg animate-pulse">Loading your playlist...</p>
+          <LoveMessage />
         </div>
       </div>
     );
@@ -263,6 +299,7 @@ export default function Game() {
           </motion.div>
           <p className="text-pink-400 font-['Playfair_Display'] text-xl animate-pulse">Loading your playlist...</p>
           <p style={{ color: "#d4a0bc", fontSize: 13 }}>{playlist?.title} 💖</p>
+          <LoveMessage />
         </motion.div>
       </div>
     );
@@ -314,7 +351,7 @@ export default function Game() {
           <YouTube
             key={currentSong.id}
             videoId={currentSong.id}
-            opts={{ height: "0", width: "0", playerVars: { autoplay: 1, controls: 0, disablekb: 1, start: randomStart } }}
+            opts={{ height: "0", width: "0", playerVars: { autoplay: 1, controls: 0, disablekb: 1, start: randomStart, shuffle: 1 } }}
             onReady={handlePlayerReady}
             onStateChange={handleStateChange}
           />
@@ -378,7 +415,7 @@ export default function Game() {
                   </p>
                 </div>
 
-                {/* 타이머 바 */}
+                {/* Timer bar */}
                 {!isUnlimitedTime && (
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs" style={{ color: "#d48fb0" }}>
@@ -415,37 +452,6 @@ export default function Game() {
                       {choice}
                     </motion.button>
                   ))}
-                </div>
-
-                {/* 액션 버튼 3개 */}
-                <div className="flex gap-2 justify-center pt-1">
-                  {/* 다시 듣기 */}
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={handleReplay}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium transition-all"
-                    style={{ background: "#fff0f6", border: "1px solid #f9c5d9", color: "#c2185b" }}>
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    다시 듣기
-                    {replayCount > 0 && <span className="ml-0.5 opacity-60">({replayCount})</span>}
-                  </motion.button>
-
-                  {/* 랜덤 5초 듣기 */}
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={handleSnippet}
-                    disabled={snippetUsed}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium transition-all"
-                    style={snippetUsed
-                      ? { background: "#f5f5f5", border: "1px solid #e0e0e0", color: "#bbb", cursor: "not-allowed" }
-                      : { background: "#f3e8ff", border: "1px solid #d8b4fe", color: "#7c3aed" }}>
-                    <Shuffle className="w-3.5 h-3.5" />
-                    랜덤 5초 {snippetUsed && "✓"}
-                  </motion.button>
-
-                  {/* 스킵 */}
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={handleSkip}
-                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-medium transition-all"
-                    style={{ background: "#fff5f5", border: "1px solid #fecdd3", color: "#e11d48" }}>
-                    <SkipForward className="w-3.5 h-3.5" />
-                    스킵
-                  </motion.button>
                 </div>
               </div>
             </motion.div>
