@@ -8,6 +8,7 @@ export function usePlaylist(playlistId: string | null) {
     queryFn: () => apiRequest<PlaylistResponse>("GET", `/api/playlist/${playlistId}`),
     enabled: !!playlistId,
     staleTime: Infinity,
+    retry: 0, // ★ 재시도 없음 - 실패하면 즉시 에러 표시 (무한로딩 방지)
   });
 }
 
@@ -16,6 +17,7 @@ export function useLeaderboard(playlistId: string | null) {
     queryKey: ["leaderboard", playlistId],
     queryFn: () => apiRequest<Game[]>("GET", `/api/games/leaderboard/${playlistId}`),
     enabled: !!playlistId,
+    retry: 1,
   });
 }
 

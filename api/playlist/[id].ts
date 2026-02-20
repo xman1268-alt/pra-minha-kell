@@ -1,151 +1,120 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import axios from "axios";
 
+// Vercel serverless 타임아웃: 10초
+// ★ 핵심 수정: YouTube API 키가 있으면 공식 API만 사용 (빠름, ~1-2초)
+//              ytpl / scraping fallback 완전 제거 (이게 무한로딩의 원인이었음)
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
   const { id: playlistId } = req.query;
-
   if (!playlistId || typeof playlistId !== "string") {
     return res.status(400).json({ message: "Playlist ID is required" });
   }
 
+  const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+
+  // API 키 없으면 즉시 에러 반환 (무한로딩 방지)
+  if (!YOUTUBE_API_KEY) {
+    console.error("[playlist] YOUTUBE_API_KEY is not set in Vercel environment variables!");
+    return res.status(500).json({
+      message: "YouTube API key is not configured. Please add YOUTUBE_API_KEY in Vercel → Settings → Environment Variables, then Redeploy.",
+    });
+  }
+
   try {
-    const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
-    console.log("[playlist] API key present:", !!YOUTUBE_API_KEY);
+    console.log(`[playlist] Fetching playlist: ${playlistId}`);
 
-    // --- Strategy 1: Official YouTube Data API v3 ---
-    if (YOUTUBE_API_KEY) {
-      console.log("[playlist] Trying YouTube Data API v3...");
-      try {
-        const response = await axios.get(
-          `https://www.googleapis.com/youtube/v3/playlistItems`,
-          {
-            params: {
-              part: "snippet",
-              playlistId,
-              maxResults: 50,
-              key: YOUTUBE_API_KEY,
-            },
-          }
-        );
-        const items = response.data.items;
-        if (items && items.length > 0) {
-          const songs = items
-            .filter((item: any) => item.snippet?.resourceId?.videoId)
-            .map((item: any) => ({
-              id: item.snippet.resourceId.videoId,
-              title: item.snippet.title,
-              thumbnail:
-                item.snippet.thumbnails?.medium?.url ||
-                item.snippet.thumbnails?.default?.url ||
-                "",
-            }));
+    // ── 곡 목록 가져오기 (페이지네이션, 최대 200곡) ──
+    const allSongs: { id: string; title: string; thumbnail: string }[] = [];
+    let nextPageToken: string | undefined;
+    let page = 0;
 
-          const plRes = await axios.get(
-            `https://www.googleapis.com/youtube/v3/playlists`,
-            {
-              params: { part: "snippet", id: playlistId, key: YOUTUBE_API_KEY },
-            }
-          );
-          const title =
-            plRes.data.items?.[0]?.snippet?.title || "YouTube Playlist";
-
-          return res.status(200).json({ id: playlistId, title, songs });
-        }
-      } catch (apiErr) {
-        console.warn("YouTube API failed, trying scrape fallback:", apiErr);
-      }
-    }
-
-    // --- Strategy 2: ytpl library ---
-    try {
-      const ytpl = (await import("ytpl")).default;
-      const playlist = await ytpl(playlistId, { limit: 100 });
-      if (playlist?.items?.length > 0) {
-        const songs = playlist.items.map((item) => ({
-          id: item.id,
-          title: item.title,
-          thumbnail: item.bestThumbnail?.url || "",
-        }));
-        return res.status(200).json({
-          id: playlist.id,
-          title: playlist.title,
-          songs,
-        });
-      }
-    } catch (ytplErr) {
-      console.warn("ytpl failed, trying manual scrape:", ytplErr);
-    }
-
-    // --- Strategy 3: Manual HTML scrape ---
-    try {
-      const response = await axios.get(
-        `https://www.youtube.com/playlist?list=${playlistId}`,
+    do {
+      const itemsRes = await axios.get(
+        "https://www.googleapis.com/youtube/v3/playlistItems",
         {
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept-Language": "en-US,en;q=0.9",
+          params: {
+            part: "snippet",
+            playlistId,
+            maxResults: 50,
+            key: YOUTUBE_API_KEY,
+            ...(nextPageToken ? { pageToken: nextPageToken } : {}),
           },
+          timeout: 7000, // ★ 7초 타임아웃 (Vercel 10초 제한 내)
         }
       );
 
-      const html = response.data;
-      const jsonMatch =
-        html.match(/var ytInitialData = (\{.*?\});/) ||
-        html.match(/window\["ytInitialData"\] = (\{.*?\});/);
+      const items: any[] = itemsRes.data.items ?? [];
+      const songs = items
+        .filter(
+          (item) =>
+            item.snippet?.resourceId?.videoId &&
+            item.snippet?.title !== "Deleted video" &&
+            item.snippet?.title !== "Private video"
+        )
+        .map((item) => ({
+          id: item.snippet.resourceId.videoId,
+          title: item.snippet.title,
+          thumbnail:
+            item.snippet.thumbnails?.medium?.url ||
+            item.snippet.thumbnails?.default?.url ||
+            `https://img.youtube.com/vi/${item.snippet.resourceId.videoId}/mqdefault.jpg`,
+        }));
 
-      if (jsonMatch) {
-        const data = JSON.parse(jsonMatch[1]);
-        const sidebar = data.sidebar?.playlistSidebarRenderer?.items;
-        const playlistTitle =
-          sidebar?.[0]?.playlistSidebarPrimaryInfoRenderer?.title?.runs?.[0]
-            ?.text || "YouTube Playlist";
+      allSongs.push(...songs);
+      nextPageToken = itemsRes.data.nextPageToken;
+      page++;
+    } while (nextPageToken && page < 4); // 최대 4 페이지 = 200곡
 
-        const tabs = data.contents?.twoColumnBrowseResultsRenderer?.tabs;
-        const playlistVideoList =
-          tabs?.[0]?.tabRenderer?.content?.sectionListRenderer?.contents?.[0]
-            ?.itemSectionRenderer?.contents?.[0]?.playlistVideoListRenderer
-            ?.contents;
-
-        if (playlistVideoList?.length > 0) {
-          const songs = playlistVideoList
-            .filter((item: any) => item.playlistVideoRenderer)
-            .map((item: any) => {
-              const video = item.playlistVideoRenderer;
-              return {
-                id: video.videoId,
-                title:
-                  video.title?.runs?.[0]?.text ||
-                  video.title?.accessibility?.accessibilityData?.label ||
-                  "Unknown Title",
-                thumbnail: video.thumbnail?.thumbnails?.[0]?.url || "",
-              };
-            });
-
-          if (songs.length > 0) {
-            return res.status(200).json({
-              id: playlistId,
-              title: playlistTitle,
-              songs,
-            });
-          }
-        }
-      }
-    } catch (scrapeErr) {
-      console.warn("Manual scrape failed:", scrapeErr);
+    if (allSongs.length === 0) {
+      return res.status(404).json({
+        message: "Playlist is empty, or all videos are private/deleted. Make sure the playlist is set to Public.",
+      });
     }
 
-    return res
-      .status(404)
-      .json({ message: "Playlist not found or empty. Make sure it's public." });
-  } catch (err) {
-    console.error("Error fetching playlist:", err);
-    res.status(500).json({
-      message: "Failed to fetch playlist. It might be private or invalid.",
+    // ── 플레이리스트 제목 가져오기 ──
+    let title = "YouTube Playlist";
+    try {
+      const plRes = await axios.get(
+        "https://www.googleapis.com/youtube/v3/playlists",
+        {
+          params: { part: "snippet", id: playlistId, key: YOUTUBE_API_KEY },
+          timeout: 5000,
+        }
+      );
+      title = plRes.data.items?.[0]?.snippet?.title || title;
+    } catch {
+      // 제목 못 가져와도 곡 목록은 반환
+    }
+
+    console.log(`[playlist] OK: "${title}" (${allSongs.length} songs)`);
+    return res.status(200).json({ id: playlistId, title, songs: allSongs });
+
+  } catch (err: any) {
+    const status = err?.response?.status;
+    const apiMsg = err?.response?.data?.error?.message;
+    console.error("[playlist] Error:", status, apiMsg || err?.message);
+
+    if (status === 403) {
+      return res.status(403).json({
+        message: `YouTube API error: ${apiMsg || "API key is invalid or quota exceeded"}. Check YOUTUBE_API_KEY in Vercel settings.`,
+      });
+    }
+    if (status === 404) {
+      return res.status(404).json({
+        message: "Playlist not found. Make sure it is set to Public on YouTube.",
+      });
+    }
+    if (err.code === "ECONNABORTED" || err.code === "ERR_CANCELED") {
+      return res.status(504).json({ message: "YouTube API request timed out. Please try again." });
+    }
+
+    return res.status(500).json({
+      message: apiMsg || err?.message || "Failed to fetch playlist.",
     });
   }
 }
