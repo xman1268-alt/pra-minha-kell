@@ -14,9 +14,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
+    console.log("[playlist] API key present:", !!YOUTUBE_API_KEY);
 
     // --- Strategy 1: Official YouTube Data API v3 ---
     if (YOUTUBE_API_KEY) {
+      console.log("[playlist] Trying YouTube Data API v3...");
       try {
         const response = await axios.get(
           `https://www.googleapis.com/youtube/v3/playlistItems`,
