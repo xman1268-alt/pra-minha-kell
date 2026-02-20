@@ -184,7 +184,11 @@ export default function Home() {
               </div>
               <div className="flex flex-wrap gap-2 pt-1">
                 {[
-                  { label: "💖 Rakell's Favorite", id: "PLhXBj2Th3Eq4xDKmZWTLnCtCJY-iRIWT5" },
+                  { label: "🖤 Billie Eilish", id: "PL7LcngJfCRUE37E25pKTSPvVDYYvES3N9" },
+                  { label: "🎤 Fifth Harmony", id: "PLxsMKpWb6s1Gx3VScWjLXp1UFEQug7rvz" },
+                  { label: "🎸 Cazuza", id: "PLvgcQr40gK92Xtz-Tfkl9HJwKHU6UW4wF" },
+                  { label: "🌟 Ana Vitória", id: "PLN34cZGhF86aSwZqHlVw7lOCLCiEwgmPv" },
+                  { label: "🎶 Djavan", id: "PL-jLSD1zyBYt7ykqJIHwxnG6A20IWeHW3" },
                 ].map(({ label, id }) => (
                   <button key={id} type="button" onClick={() => setPlaylistInput(id)}
                     className="text-xs px-3 py-1.5 rounded-full transition-all"
