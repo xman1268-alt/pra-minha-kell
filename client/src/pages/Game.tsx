@@ -336,11 +336,36 @@ export default function Game() {
                   ))}
                 </div>
 
-                {/* Skip */}
-                <button onClick={() => { if (timerRef.current) clearInterval(timerRef.current); handleTimeUp(); }}
-                  className="w-full py-2 text-xs text-pink-300 hover:text-pink-400 flex items-center justify-center gap-1 transition-colors">
-                  <SkipForward className="w-3 h-3" /> Skip this song
-                </button>
+                {/* Action buttons */}
+                <div className="flex gap-2">
+                  {/* 다시 듣기 */}
+                  <button
+                    onClick={() => {
+                      playerRef.current?.seekTo(0, true);
+                      playerRef.current?.playVideo();
+                    }}
+                    className="flex-1 py-2 text-xs text-pink-400 hover:text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-xl flex items-center justify-center gap-1 transition-colors border border-pink-100">
+                    🔁 다시 듣기
+                  </button>
+                  {/* 5초 랜덤 */}
+                  <button
+                    onClick={() => {
+                      const duration = playerRef.current?.getDuration?.() || 180;
+                      const maxStart = Math.max(0, duration - 10);
+                      const randomStart = Math.floor(Math.random() * maxStart);
+                      playerRef.current?.seekTo(randomStart, true);
+                      playerRef.current?.playVideo();
+                      setTimeout(() => playerRef.current?.pauseVideo(), 5000);
+                    }}
+                    className="flex-1 py-2 text-xs text-purple-400 hover:text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-xl flex items-center justify-center gap-1 transition-colors border border-purple-100">
+                    🎲 5초 랜덤
+                  </button>
+                  {/* Skip */}
+                  <button onClick={() => { if (timerRef.current) clearInterval(timerRef.current); handleTimeUp(); }}
+                    className="flex-1 py-2 text-xs text-gray-300 hover:text-gray-400 bg-gray-50 hover:bg-gray-100 rounded-xl flex items-center justify-center gap-1 transition-colors border border-gray-100">
+                    <SkipForward className="w-3 h-3" /> Skip
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}

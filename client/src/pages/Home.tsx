@@ -85,6 +85,9 @@ export default function Home() {
               <div className="flex flex-wrap gap-2 pt-1">
                 {[
                   { label: "💖 Rakell's Favorite", id: "PLhXBj2Th3Eq4xDKmZWTLnCtCJY-iRIWT5" },
+                  { label: "🌸 Kpop Girl Groups", id: "PLw-VjHDlEOgs658kAHR_88UC3f4DhB-eb" },
+                  { label: "💃 Fifth Harmony", id: "PLDIoUOhQQPlXr63I_ZFAEVHZVcHdZmCCn" },
+                  { label: "🖤 Billie Eilish", id: "PLop28K3JGxM0XzqRFQ8Zf3MqXm0QN2oYO" },
                 ].map(({ label, id }) => (
                   <button key={id} type="button" onClick={() => setPlaylistInput(id)}
                     className="text-xs px-3 py-1.5 rounded-full bg-pink-50 hover:bg-pink-100 border border-pink-200 hover:border-pink-400 text-pink-500 transition-all">
