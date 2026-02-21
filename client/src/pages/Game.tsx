@@ -5,7 +5,7 @@ import confetti from "canvas-confetti";
 import { usePlaylist, useSubmitGame, useLeaderboard } from "@/hooks/use-game";
 import { Waveform } from "@/components/Waveform";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, SkipForward, Trophy, RotateCcw, ExternalLink } from "lucide-react";
+import { Home, SkipForward, Trophy, RotateCcw, ExternalLink, Pause, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Game } from "../../../shared/schema";
 import type { PlaylistSong } from "../../../shared/schema";
@@ -79,11 +79,15 @@ export default function Game() {
 
   // Safari: 자동재생이 막혔을 때 탭 유도 UI 표시 여부
   const [needsUserTap, setNeedsUserTap] = useState(false);
+  // 한 번이라도 사용자 gesture(탭)가 있었는지 — 이후 라운드는 Next 버튼으로 재생
+  const [hasGesture, setHasGesture] = useState(false);
 
   const playerRef = useRef<YouTubePlayer | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const snippetTimerRef = useRef<NodeJS.Timeout | null>(null);
   const tapCheckRef = useRef<NodeJS.Timeout | null>(null);
+  // Next 버튼 gesture 컨텍스트에서 재생 예약 플래그
+  const pendingPlayRef = useRef(false);
 
   useEffect(() => {
     if (playlist && gameState === "loading") {
@@ -94,9 +98,9 @@ export default function Game() {
     }
   }, [playlist]);
 
-  // 타이머: needsUserTap 중에는 정지
+  // 타이머: needsUserTap 중이거나 일시정지 중엔 정지
   useEffect(() => {
-    if (gameState !== "playing" || needsUserTap) {
+    if (gameState !== "playing" || needsUserTap || !isPlaying) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -109,7 +113,7 @@ export default function Game() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [gameState, currentSongIndex, needsUserTap]);
+  }, [gameState, currentSongIndex, needsUserTap, isPlaying]);
 
   const handleTimeUp = () => {
     if (selected !== null) return;
@@ -156,8 +160,16 @@ export default function Game() {
     playerRef.current?.stopVideo();
     if (!playlist) return;
     const nextRound = round + 1;
-    if (nextRound > totalRounds) { setGameState("gameOver"); }
-    else { setRound(nextRound); startRound(playedIndices, nextRound, totalRounds, playlist.songs); }
+    if (nextRound > totalRounds) {
+      setGameState("gameOver");
+    } else {
+      setRound(nextRound);
+      startRound(playedIndices, nextRound, totalRounds, playlist.songs);
+      // hasGesture=true면 Next 버튼 탭이 gesture — onReady 전에 미리 재생 예약
+      if (hasGesture) {
+        pendingPlayRef.current = true;
+      }
+    }
   };
 
   const goHome = () => {
@@ -173,6 +185,7 @@ export default function Game() {
     playerRef.current.unMute();
     playerRef.current.playVideo();
     setNeedsUserTap(false);
+    setHasGesture(true); // 이후 라운드부터는 Next 버튼이 gesture 역할
   };
 
   const handleReplay = () => {
@@ -209,22 +222,25 @@ export default function Game() {
     playerRef.current.setVolume(70);
     playerRef.current.seekTo(randomStart, true);
 
-    // Chrome/Firefox: autoplay 시도
-    // iOS Safari: 실패해도 catch하고 탭 버튼으로 fallback
+    // Next 버튼으로 넘어온 경우 (gesture 있음) → 바로 재생
+    if (pendingPlayRef.current) {
+      pendingPlayRef.current = false;
+      playerRef.current.playVideo();
+      return;
+    }
+
+    // 첫 라운드 또는 자동넘김: autoplay 시도 후 실패 시 탭 버튼 표시
     try {
       const playPromise = playerRef.current.playVideo();
-      // playVideo()는 Promise를 반환하지 않지만 혹시 몰라 wrap
       if (playPromise && typeof playPromise.catch === "function") {
         playPromise.catch(() => setNeedsUserTap(true));
       }
     } catch (_) {}
 
-    // iOS에서는 autoplay가 silently 실패하므로 500ms 후 상태 체크
     if (tapCheckRef.current) clearTimeout(tapCheckRef.current);
     tapCheckRef.current = setTimeout(() => {
       if (!playerRef.current) return;
       const state = playerRef.current.getPlayerState();
-      // -1: unstarted, 5: video cued → 재생 안 됨
       if (state !== 1 && state !== 3) {
         setNeedsUserTap(true);
       }
@@ -377,7 +393,7 @@ export default function Game() {
 
                   <Waveform isPlaying={isPlaying} />
 
-                  {/* 탭 대기 중엔 큰 버튼도 표시 */}
+                  {/* 탭 대기 중엔 큰 버튼도 표시, 재생 중엔 일시정지/재생 토글 */}
                   {needsUserTap ? (
                     <motion.button
                       onClick={handleUserTapPlay}
@@ -388,9 +404,28 @@ export default function Game() {
                       ▶ Tap to Play 🎵
                     </motion.button>
                   ) : (
-                    <p className="font-['Playfair_Display'] italic text-sm" style={{ color: "#d4a0bc" }}>
-                      Song {round} of {totalRounds} — listen and choose! 🎵
-                    </p>
+                    <div className="flex items-center gap-3">
+                      {/* 일시정지 / 재생 토글 */}
+                      <motion.button
+                        whileTap={{ scale: 0.92 }}
+                        onClick={() => {
+                          if (!playerRef.current) return;
+                          if (isPlaying) {
+                            playerRef.current.pauseVideo();
+                          } else {
+                            playerRef.current.playVideo();
+                          }
+                        }}
+                        className="flex items-center justify-center w-9 h-9 rounded-full"
+                        style={{ background: "linear-gradient(135deg, #e91e8c, #7c3aed)", boxShadow: "0 2px 10px rgba(233,30,140,0.3)" }}>
+                        {isPlaying
+                          ? <Pause className="w-4 h-4 text-white" />
+                          : <Play className="w-4 h-4 text-white" />}
+                      </motion.button>
+                      <p className="font-['Playfair_Display'] italic text-sm" style={{ color: "#d4a0bc" }}>
+                        Song {round} of {totalRounds} — listen and choose! 🎵
+                      </p>
+                    </div>
                   )}
                 </div>
 
