@@ -24,9 +24,21 @@ export default function Home() {
   const [pressing, setPressing] = useState(false);
   const [, setLocation] = useLocation();
 
+  const unlockAudioContext = () => {
+    // Safari requires user gesture to unlock AudioContext before any audio can play
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        ctx.resume().then(() => ctx.close());
+      }
+    } catch (_) {}
+  };
+
   const handleStart = (e: React.FormEvent) => {
     e.preventDefault();
     if (!playlistInput.trim()) return;
+    unlockAudioContext();
     let playlistId = playlistInput.trim();
     try {
       const url = new URL(playlistInput);

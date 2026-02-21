@@ -223,8 +223,13 @@ export default function Game() {
   const handleReplay = () => {
     if (!playerRef.current) return;
     setReplayCount((c) => c + 1);
+    playerRef.current.mute();
     playerRef.current.seekTo(randomStart, true);
     playerRef.current.playVideo();
+    setTimeout(() => {
+      playerRef.current?.unMute();
+      playerRef.current?.setVolume(70);
+    }, 300);
   };
 
   // ── 랜덤 5초 듣기: 다른 랜덤 구간 5초만 재생
@@ -232,8 +237,13 @@ export default function Game() {
     if (!playerRef.current || snippetUsed) return;
     setSnippetUsed(true);
     const newStart = getRandomStart();
+    playerRef.current.mute();
     playerRef.current.seekTo(newStart, true);
     playerRef.current.playVideo();
+    setTimeout(() => {
+      playerRef.current?.unMute();
+      playerRef.current?.setVolume(70);
+    }, 300);
     if (snippetTimerRef.current) clearTimeout(snippetTimerRef.current);
     snippetTimerRef.current = setTimeout(() => {
       playerRef.current?.pauseVideo();
@@ -250,9 +260,18 @@ export default function Game() {
   // YouTube handlers
   const handlePlayerReady = (e: YouTubeEvent) => {
     playerRef.current = e.target;
-    playerRef.current.setVolume(70);
     playerRef.current.seekTo(randomStart, true);
-    if (gameState === "playing") playerRef.current.playVideo();
+    if (gameState === "playing") {
+      // Safari autoplay policy: start muted, then unmute after a short delay.
+      // Safari blocks unmuted autoplay even with a prior user gesture,
+      // but allows muted autoplay. We unmute quickly so the user won't notice.
+      playerRef.current.mute();
+      playerRef.current.playVideo();
+      setTimeout(() => {
+        playerRef.current?.unMute();
+        playerRef.current?.setVolume(70);
+      }, 500);
+    }
   };
   const handleStateChange = (e: YouTubeEvent) => {
     setIsPlaying(e.data === YouTube.PlayerState.PLAYING);
@@ -351,7 +370,8 @@ export default function Game() {
           <YouTube
             key={currentSong.id}
             videoId={currentSong.id}
-            opts={{ height: "0", width: "0", playerVars: { autoplay: 1, controls: 0, disablekb: 1, start: randomStart, shuffle: 1 } }}
+            // mute:1 is required for Safari autoplay policy; we unMute() in onReady after playback starts
+            opts={{ height: "0", width: "0", playerVars: { autoplay: 1, controls: 0, disablekb: 1, start: randomStart, shuffle: 1, mute: 1 } }}
             onReady={handlePlayerReady}
             onStateChange={handleStateChange}
           />
